@@ -35,9 +35,11 @@ class GoBGPContainer(BGPContainer):
     QUAGGA_VOLUME = '/etc/quagga'
 
     def __init__(self, name, asn, router_id, ctn_image_name='osrg/gobgp',
+                 ip_addr='',
                  log_level='debug', zebra=False, config_format='toml',
                  zapi_version=2):
         super(GoBGPContainer, self).__init__(name, asn, router_id,
+                                             ip_addr,
                                              ctn_image_name)
         self.shared_volumes.append((self.config_dir, self.SHARED_VOLUME))
 

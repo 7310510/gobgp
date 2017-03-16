@@ -21,8 +21,10 @@ class ExaBGPContainer(BGPContainer):
     SHARED_VOLUME = '/root/shared_volume'
 
     def __init__(self, name, asn, router_id, ctn_image_name='osrg/exabgp',
+                 ip_addr='',
                  exabgp_path=''):
         super(ExaBGPContainer, self).__init__(name, asn, router_id,
+                                              ip_addr,
                                               ctn_image_name)
         self.shared_volumes.append((self.config_dir, self.SHARED_VOLUME))
         self.exabgp_path = exabgp_path
