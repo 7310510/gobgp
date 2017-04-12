@@ -98,13 +98,30 @@ class QuaggaBGPContainer(BGPContainer):
 
         nexthop = lines[1].split()[0].strip()
         info = [s.strip(',') for s in lines[2].split()]
+
+        if lines[3].startswith('Community'):
+            info.append('Community')
+            info.append([s.strip(',') for s in lines[3].split()][1:])
+        elif lines[3].startswith('Extended Community:'):
+            info.append('Extended Community')
+            info.append([s.strip(',') for s in lines[3].split()][2:])
+
         attrs = []
+        if 'Origin' in info:
+            origin = info[info.index('Origin') + 1]
+            attrs.append({'type': BGP_ATTR_TYPE_ORIGIN, 'value': str(origin)})
         if 'metric' in info:
             med = info[info.index('metric') + 1]
             attrs.append({'type': BGP_ATTR_TYPE_MULTI_EXIT_DISC, 'metric': int(med)})
         if 'localpref' in info:
             localpref = info[info.index('localpref') + 1]
             attrs.append({'type': BGP_ATTR_TYPE_LOCAL_PREF, 'value': int(localpref)})
+        if 'Community' in info:
+            community = info[info.index('Community') + 1]
+            attrs.append({'type': BGP_ATTR_TYPE_COMMUNITIES, 'value': list(community)})
+        if 'Extended Community' in info:
+            extendedcommunity = info[info.index('Extended Community') + 1]
+            attrs.append({'type': BGP_ATTR_TYPE_EXTENDED_COMMUNITIES, 'value': list(extendedcommunity)})
 
         rib.append({'prefix': prefix, 'nexthop': nexthop,
                     'aspath': aspath, 'attrs': attrs})
