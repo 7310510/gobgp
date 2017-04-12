@@ -22,6 +22,7 @@ from threading import Thread
 import socket
 import subprocess
 import os
+import shutil
 
 def extract_path_attribute(path, typ):
     for a in path['attrs']:
@@ -35,10 +36,11 @@ class GoBGPContainer(BGPContainer):
     QUAGGA_VOLUME = '/etc/quagga'
 
     def __init__(self, name, asn, router_id, ctn_image_name='osrg/gobgp',
-                 log_level='debug', zebra=False, config_format='toml',
+                 ip_addr='', log_level='debug', zebra=False,
+                 config_file='', config_format='toml',
                  zapi_version=2):
         super(GoBGPContainer, self).__init__(name, asn, router_id,
-                                             ctn_image_name)
+                                             ip_addr, ctn_image_name)
         self.shared_volumes.append((self.config_dir, self.SHARED_VOLUME))
 
         self.log_level = log_level
@@ -48,6 +50,7 @@ class GoBGPContainer(BGPContainer):
         self.default_policy = None
         self.zebra = zebra
         self.zapi_version = zapi_version
+        self.config_file = config_file
         self.config_format = config_format
 
     def _start_gobgp(self, graceful_restart=False):
@@ -245,9 +248,16 @@ class GoBGPContainer(BGPContainer):
         self.bgp_set = bs
 
     def create_config(self):
-        self._create_config_bgp()
-        if self.zebra:
-            self._create_config_zebra()
+        if self.config_file == '':
+            self._create_config_bgp()
+            if self.zebra:
+                self._create_config_zebra()
+        else:
+            try:
+                shutil.copyfile(self.config_file, '{0}/gobgpd.conf'.format(self.config_dir))
+                print colors.yellow('[read {0}\'s config from {1}]'.format(self.name, self.config_file))
+            except IOError as e:
+                raise Exception('IOError: {0}'.format(e))
 
     def _create_config_bgp(self):
         config = {'global': {'config': {'as': self.asn, 'router-id': self.router_id},

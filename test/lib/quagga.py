@@ -22,8 +22,11 @@ class QuaggaBGPContainer(BGPContainer):
     WAIT_FOR_BOOT = 1
     SHARED_VOLUME = '/etc/quagga'
 
-    def __init__(self, name, asn, router_id, ctn_image_name='osrg/quagga', zebra=False):
+    def __init__(self, name, asn, router_id, ctn_image_name='osrg/quagga',
+                 ip_addr='',
+                 zebra=False):
         super(QuaggaBGPContainer, self).__init__(name, asn, router_id,
+                                                 ip_addr,
                                                  ctn_image_name)
         self.shared_volumes.append((self.config_dir, self.SHARED_VOLUME))
         self.zebra = zebra

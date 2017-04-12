@@ -15,22 +15,25 @@
 
 from base import *
 from itertools import chain
+import shutil
 
 class ExaBGPContainer(BGPContainer):
 
     SHARED_VOLUME = '/root/shared_volume'
 
     def __init__(self, name, asn, router_id, ctn_image_name='osrg/exabgp',
-                 exabgp_path=''):
+                 ip_addr='', config_file='', exabgp_path=''):
         super(ExaBGPContainer, self).__init__(name, asn, router_id,
+                                              ip_addr,
                                               ctn_image_name)
         self.shared_volumes.append((self.config_dir, self.SHARED_VOLUME))
+        self.config_file = config_file
         self.exabgp_path = exabgp_path
 
     def _start_exabgp(self):
         cmd = CmdBuffer(' ')
         cmd << 'env exabgp.log.destination={0}/exabgpd.log'.format(self.SHARED_VOLUME)
-        cmd << "exabgp.tcp.bind='0.0.0.0' exabgp.tcp.port=179"
+        cmd << "exabgp.daemon.user=root exabgp.tcp.bind='0.0.0.0' exabgp.tcp.port=179"
         cmd << './exabgp/sbin/exabgp {0}/exabgpd.conf'.format(self.SHARED_VOLUME)
         self.local(str(cmd), detach=True)
 
@@ -62,6 +65,16 @@ class ExaBGPContainer(BGPContainer):
         return self.WAIT_FOR_BOOT
 
     def create_config(self):
+        if self.config_file:
+            try:
+                shutil.copyfile(self.config_file, '{0}/exabgpd.conf'.format(self.config_dir))
+                print colors.yellow('[read {0}\'s config from {1}]'.format(self.name, self.config_file))
+            except IOError as e:
+                raise Exception('IOError: {0}'.format(e))
+            except:
+                raise Exception('Error: ', sys.exc_info()[0])
+            return
+
         cmd = CmdBuffer()
         for peer, info in self.peers.iteritems():
             cmd << 'neighbor {0} {{'.format(info['neigh_addr'].split('/')[0])

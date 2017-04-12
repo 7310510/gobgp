@@ -118,14 +118,13 @@ def make_gobgp_ctn(tag='gobgp', local_gobgp_path='', from_image='osrg/quagga'):
 
 
 class Bridge(object):
-    def __init__(self, name, subnet='', with_ip=True, self_ip=False):
+    def __init__(self, name, subnet='', ip_range='', with_ip=True, self_ip=False):
         self.name = name
         if TEST_PREFIX != '':
             self.name = '{0}_{1}'.format(TEST_PREFIX, name)
         self.with_ip = with_ip
+        self.subnet = netaddr.IPNetwork(subnet)
         if with_ip:
-            self.subnet = netaddr.IPNetwork(subnet)
-
             def f():
                 for host in self.subnet:
                     yield host
@@ -139,7 +138,10 @@ class Bridge(object):
             v6 = ''
             if self.subnet.version == 6:
                 v6 = '--ipv6'
-            self.id = local('docker network create --driver bridge {0} --subnet {1} {2}'.format(v6, subnet, self.name), capture=True)
+            sub_range = ''
+            if ip_range:
+                sub_range = '--ip-range={0}'.format(ip_range)
+            self.id = local('docker network create --driver bridge {0} --subnet {1} {2} {3}'.format(v6, subnet, sub_range, self.name), capture=True)
         try_several_times(f)
 
         self.self_ip = self_ip
@@ -155,7 +157,14 @@ class Bridge(object):
     def addif(self, ctn):
         name = ctn.next_if_name()
         self.ctns.append(ctn)
-        local("docker network connect {0} {1}".format(self.name, ctn.docker_name()))
+        ip = ''
+        if not self.with_ip:
+            if ctn.ip_addr == '':
+                raise Exception('ip_addr is needed when with_ip is False')
+            ip = '--ip {0}'.format(ctn.ip_addr)
+            if self.subnet.version == 6:
+                ip = '--ip6 {0}'.format(ctn.ip_addr)
+        local("docker network connect {0} {1} {2}".format(ip, self.name, ctn.docker_name()))
         i = [x for x in Client(timeout=60, version='auto').inspect_network(self.id)['Containers'].values() if x['Name'] == ctn.docker_name()][0]
         if self.subnet.version == 4:
             addr = i['IPv4Address']
@@ -270,7 +279,7 @@ class BGPContainer(Container):
     WAIT_FOR_BOOT = 1
     RETRY_INTERVAL = 5
 
-    def __init__(self, name, asn, router_id, ctn_image_name):
+    def __init__(self, name, asn, router_id, ip_addr, ctn_image_name):
         self.config_dir = '/'.join((TEST_BASE_DIR, TEST_PREFIX, name))
         local('if [ -e {0} ]; then rm -r {0}; fi'.format(self.config_dir))
         local('mkdir -p {0}'.format(self.config_dir))
@@ -280,6 +289,7 @@ class BGPContainer(Container):
         self.peers = {}
         self.routes = {}
         self.policies = {}
+        self.ip_addr = ip_addr
         super(BGPContainer, self).__init__(name, ctn_image_name)
 
     def __repr__(self):
