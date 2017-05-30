@@ -414,6 +414,14 @@ class GoBGPContainer(BGPContainer):
             print colors.yellow(indent(str(c)))
             f.writelines(str(c))
 
+    def replace_config(self, config_file):
+        self.config_file = config_file
+        try:
+            shutil.copyfile(self.config_file, '{0}/gobgpd.conf'.format(self.config_dir))
+            print colors.yellow('[replace {0}\'s config from {1}]'.format(self.name, self.config_file))
+        except IOError as e:
+            raise Exception('IOError: {0}'.format(e))
+
     def reload_config(self):
         daemon = []
         daemon.append('gobgpd')

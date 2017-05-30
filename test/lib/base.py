@@ -470,5 +470,8 @@ class BGPContainer(Container):
     def create_config(self):
         raise Exception('implement create_config() method')
 
+    def replace_config(self):
+        raise Exception('implement replace_config() method')
+
     def reload_config(self):
         raise Exception('implement reload_config() method')
