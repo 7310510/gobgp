@@ -364,13 +364,14 @@ class BGPContainer(Container):
     def log(self):
         return local('cat {0}/*.log'.format(self.config_dir), capture=True)
 
-    def add_route(self, route, rf='ipv4', attribute=None, aspath=None,
+    def add_route(self, route, rf='ipv4', attribute=None, origin=None, aspath=None,
                   community=None, med=None, extendedcommunity=None,
                   nexthop=None, matchs=None, thens=None,
                   local_pref=None, reload_config=True):
         self.routes[route] = {'prefix': route,
                               'rf': rf,
-                              'attr': attribute,
+                              'attrs': attribute,
+                              'origin': origin,
                               'next-hop': nexthop,
                               'as-path': aspath,
                               'community': community,

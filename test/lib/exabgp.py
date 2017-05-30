@@ -104,6 +104,8 @@ class ExaBGPContainer(BGPContainer):
                     if route['next-hop']:
                         nexthop = route['next-hop']
                     r << '      route {0} next-hop {1}'.format(route['prefix'], nexthop)
+                    if route['origin']:
+                        r << 'origin {0}'.format(route['origin'])
                     if route['as-path']:
                         r << 'as-path [{0}]'.format(' '.join(str(i) for i in route['as-path']))
                     if route['community']:
@@ -114,8 +116,9 @@ class ExaBGPContainer(BGPContainer):
                         r << 'local-preference {0}'.format(route['local-pref'])
                     if route['extended-community']:
                         r << 'extended-community [{0}]'.format(route['extended-community'])
-                    if route['attr']:
-                        r << 'attribute [ {0} ]'.format(route['attr'])
+                    if route['attrs']:
+                        for attr in route['attrs']:
+                            r << 'attribute [ {0} ]'.format(attr)
 
                     cmd << '{0};'.format(str(r))
                 cmd << '    }'
