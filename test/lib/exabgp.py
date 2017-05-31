@@ -114,6 +114,10 @@ class ExaBGPContainer(BGPContainer):
                         r << 'med {0}'.format(route['med'])
                     if route['local-pref']:
                         r << 'local-preference {0}'.format(route['local-pref'])
+                    if route['atomic-aggregate']:
+                        r << 'atomic-aggregate'
+                    if route['aggregator']:
+                        r << 'aggregator ({0})'.format(route['aggregator'])
                     if route['extended-community']:
                         r << 'extended-community [{0}]'.format(route['extended-community'])
                     if route['attrs']:

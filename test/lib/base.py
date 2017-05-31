@@ -367,7 +367,8 @@ class BGPContainer(Container):
     def add_route(self, route, rf='ipv4', attribute=None, origin=None, aspath=None,
                   community=None, med=None, extendedcommunity=None,
                   nexthop=None, matchs=None, thens=None,
-                  local_pref=None, reload_config=True):
+                  local_pref=None, atomic_aggregate=False,
+                  aggregator=None, reload_config=True):
         self.routes[route] = {'prefix': route,
                               'rf': rf,
                               'attrs': attribute,
@@ -377,6 +378,8 @@ class BGPContainer(Container):
                               'community': community,
                               'med': med,
                               'local-pref': local_pref,
+                              'atomic-aggregate': atomic_aggregate,
+                              'aggregator': aggregator,
                               'extended-community': extendedcommunity,
                               'matchs': matchs,
                               'thens' : thens}
