@@ -52,9 +52,6 @@ func getNeighbors(vrf string) (neighbors, error) {
 }
 
 func getNeighbor(name string, enableAdvertised bool) (*config.Neighbor, error) {
-	if net.ParseIP(name) == nil {
-		name = ""
-	}
 	return client.GetNeighbor(name, enableAdvertised)
 }
 
