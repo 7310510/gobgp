@@ -407,7 +407,7 @@ class BGPContainer(Container):
                     local_addr = me[1]
                     if v6:
                         addr, mask = local_addr.split('/')
-                        local_addr = "{0}%{1}/{2}".format(addr, me[0], mask)
+                        local_addr = "{0}/{1}%{2}".format(addr, mask, me[0])
                     break
 
             if neigh_addr == '':
