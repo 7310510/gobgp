@@ -449,6 +449,9 @@ class GoBGPContainer(BGPContainer):
             if info['is_rs_client']:
                 n['route-server'] = {'config': {'route-server-client': True}}
 
+            if info['secondary_route']:
+                n['route-server']['config']['secondary-route'] = True
+
             if info['local_as']:
                 n['config']['local-as'] = info['local_as']
 

@@ -385,7 +385,7 @@ class BGPContainer(Container):
         self.add_peer(peer, **kwargs)
 
     def add_peer(self, peer, passwd=None, vpn=False, is_rs_client=False,
-                 policies=None, passive=False,
+                 secondary_route=False, policies=None, passive=False,
                  is_rr_client=False, cluster_id=None,
                  flowspec=False, bridge='', reload_config=True, as2=False,
                  graceful_restart=None, local_as=None, prefix_limit=None,
@@ -422,6 +422,7 @@ class BGPContainer(Container):
                             'vpn': vpn,
                             'flowspec': flowspec,
                             'is_rs_client': is_rs_client,
+                            'secondary_route': secondary_route,
                             'is_rr_client': is_rr_client,
                             'cluster_id': cluster_id,
                             'policies': policies,
